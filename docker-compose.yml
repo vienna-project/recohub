@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-
+    restart: always
     links:
       - mongo
       - redis
@@ -21,6 +21,15 @@ services:
     restart: always
     ports:
       - 6379:6379
+
+  redis-stat:
+    image: insready/redis-stat
+    command: [--server, redis]
+    restart: always
+    ports:
+      - 8080:63790
+    links:
+      - redis:redis
 
   mongo-express:
     image: mongo-express
