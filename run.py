@@ -3,6 +3,7 @@ Copyright 2020, All rights reserved.
 Author : SangJae Kang
 Mail : craftsangjae@gmail.com
 """
+import os
 from recohub.broker import RedisQueue
 from recohub.crawler import RepositoryCrawler
 from recohub.database import MongoDatabase
@@ -15,8 +16,7 @@ if __name__ == "__main__":
 
     crawler_server = RepositoryCrawler(repo_broker,
                                        repo_database,
-                                       batch_size=100,
-                                       debug=True)
+                                       batch_size=os.environ.get('CRAWL_SIZE', 10))
     crawler_server.start()
     crawler_server.join()
 
