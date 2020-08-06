@@ -13,7 +13,6 @@ from recohub.broker import CrawlingBroker
 from recohub.query import GETREPO_QUERY
 from recohub.github import GithubKey, GITHUB_GQL
 from recohub.database import BaseDatabase, FileSystemDatabase
-from datetime import datetime
 
 
 class RepositoryCrawler(Thread):
@@ -21,30 +20,23 @@ class RepositoryCrawler(Thread):
                  broker:CrawlingBroker,
                  database:BaseDatabase,
                  batch_size=100,
-                 sleep=10.,
-                 debug=False):
+                 sleep=10.):
         Thread.__init__(self)
         self.daemon = True
         self.broker = broker
         self.database = database
         self.batch_size = batch_size
         self.sleep = sleep
-        self.debug = debug
 
         log_dir = os.environ.get('RECO_LOG_DIR', "/logs/recohub/")
         self.error_logstream = FileSystemDatabase(os.path.join(log_dir, 'get_repository_info-error.log'))
 
     def run(self):
-        if self.debug:
-            print(self, "is starting")
         while True:
             bulks = self.broker.getbulk(self.batch_size)
             if not bulks:
                 time.sleep(self.sleep)
                 continue
-
-            if self.debug:
-                print(datetime.now(), bulks)
 
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)

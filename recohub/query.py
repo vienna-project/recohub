@@ -5,11 +5,7 @@ Mail : craftsangjae@gmail.com
 """
 GETLIMIT_QUERY = '''
 query {
-  viewer {
-    login
-  }
-
-  rateLimit {
+  rateLimit(dryRun:true) {
     limit,
     cost,
     remaining,

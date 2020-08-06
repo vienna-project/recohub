@@ -47,7 +47,11 @@ class GithubKeyGen():
             if remain > 0:
                 break
         else:
-            time.sleep(min_resetAt - datetime.utcnow() + timedelta(seconds=1))
+            if min_resetAt:
+                duration = (min_resetAt.replace(tzinfo=None)
+                            - datetime.utcnow().replace(tzinfo=None)
+                            + timedelta(seconds=10)).total_seconds()
+                time.sleep(duration)
             key = self.get()
         return key
 
@@ -64,7 +68,13 @@ class GithubKeyGen():
                 min_resetAt = min(min_resetAt, resetAt) if min_resetAt else resetAt
                 if remain > 0:
                     return key
-            asyncio.sleep(min_resetAt - datetime.utcnow() + timedelta(seconds=10))
+            if min_resetAt:
+                duration = (min_resetAt.replace(tzinfo=None)
+                            - datetime.utcnow().replace(tzinfo=None)
+                            + timedelta(seconds=10)).total_seconds()
+                asyncio.sleep(duration)
+            else:
+                break
 
     @classmethod
     def get_resource_limit(cls, key: str):
