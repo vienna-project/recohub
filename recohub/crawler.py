@@ -16,6 +16,20 @@ from recohub.database import BaseDatabase, FileSystemDatabase
 
 
 class RepositoryCrawler(Thread):
+    """
+    리파짓토리 정보를 메시지 브로커로부터 가져와서, GihutAPI로부터 획득 후 데이터 베이스로 전달하는 Crawling Thread
+
+    Usages
+
+    >>> from recohub.broker import RedisQueue
+    >>> from recohub.crawler import RepositoryCrawler
+    >>> from recohub.database import MongoDatabase
+    >>> repo_broker = RedisQueue('repository', host='redis')
+    >>> repo_database = MongoDatabase('repository', uri=f"mongodb://mongo:27017/")
+    >>> crawler_server = RepositoryCrawler(repo_broker, repo_database,
+    >>>                                    batch_size=os.environ.get('CRAWL_SIZE', 10))
+    """
+
     def __init__(self,
                  broker:CrawlingBroker,
                  database:BaseDatabase,
@@ -32,15 +46,19 @@ class RepositoryCrawler(Thread):
         self.error_logstream = FileSystemDatabase(os.path.join(log_dir, 'get_repository_info-error.log'))
 
     def run(self):
+        """
+        main part
+        """
         while True:
-            bulks = self.broker.getbulk(self.batch_size)
-            if not bulks:
+            # 배치 단위로 생성
+            batches = self.broker.getbulk(self.batch_size)
+            if not batches:
                 time.sleep(self.sleep)
                 continue
 
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            tasks = [self.get_repository_info(repo, owner) for repo, owner in bulks]
+            tasks = [self.get_repository_info(repo, owner) for repo, owner in batches]
             loop.run_until_complete(asyncio.gather(*tasks))
             loop.close()
 
@@ -90,5 +108,5 @@ class RepositoryCrawler(Thread):
                 if "data" in query_results and 'rateLimit' in query_results['data']:
                     limit_result = query_results['data']['rateLimit']
                     remain, resetAt = limit_result['remaining'], parse_date(limit_result['resetAt'])
-                    GithubKey.set(api_key, remain, resetAt)
+                    await GithubKey.set_async(api_key, remain, resetAt)
 

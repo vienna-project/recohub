@@ -20,7 +20,7 @@ class CrawlingBroker:
         pass
 
     @abc.abstractmethod
-    def get(self, elem):
+    def get(self):
         pass
 
     @abc.abstractmethod

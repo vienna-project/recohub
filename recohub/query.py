@@ -3,6 +3,11 @@ Copyright 2020, All rights reserved.
 Author : SangJae Kang
 Mail : craftsangjae@gmail.com
 """
+"""
+Github GraphQL Query 문들을 저장
+"""
+
+# API Rate Limit 을 가져오기 위한 graphQL Query
 GETLIMIT_QUERY = '''
 query {
   rateLimit(dryRun:true) {
@@ -15,7 +20,7 @@ query {
 
 '''
 
-
+# Github Repostiory의 Metadata을 가져오기 위한 graphQL Query
 GETREPO_QUERY = """
 query GetRepo($owner: String!, $name: String!) { 
   repository(owner:$owner, name:$name) {
@@ -98,7 +103,8 @@ query GetRepo($owner: String!, $name: String!) {
       }
     },    
   },
-  rateLimit {
+  
+  rateLimit(dryRun:true) {
     limit,
     cost,
     remaining,
