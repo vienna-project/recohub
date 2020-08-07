@@ -11,18 +11,22 @@ services:
       - redis
 
   mongo:
+    # https://hub.docker.com/_/mongo
+    # TODO : Authentication
     image: mongo:4.2.8-bionic
     restart: always
     ports:
       - 27017:27017
 
   redis:
+    # https://hub.docker.com/_/redis
     image: redis
     restart: always
     ports:
       - 6379:6379
 
   redis-stat:
+    # https://hub.docker.com/_/mongo-express
     image: insready/redis-stat
     command: [--server, redis]
     restart: always
@@ -32,6 +36,8 @@ services:
       - redis:redis
 
   mongo-express:
+    # https://hub.docker.com/_/mongo-express
+    # TODO : Authentication
     image: mongo-express
     restart: always
     ports:
