@@ -104,7 +104,7 @@ query GetRepo($owner: String!, $name: String!) {
     },    
   },
   
-  rateLimit(dryRun:true) {
+  rateLimit {
     limit,
     cost,
     remaining,
