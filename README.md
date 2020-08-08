@@ -4,6 +4,19 @@
 
 > In more than 100 million repositories, there are hidden awesome repositories that developers need to know. Through Github's public events, we are developing services that identify the characteristics of developers and find the optimal repository
 
+### Usage
+Super easy. Just Code it below. server will be launched.
+
+````bash
+docker-compose up -d
+````
+
+ports : 
+* `27017`: mongoDB
+* `6379`: redis
+* `8080`: redis-stats
+* `8081`: mongo-express
+
 ### Architecture
 
 ![](https://imgur.com/fuarWwN.png)
@@ -28,7 +41,7 @@
 
 ##### 2. Construct Crawling Pipeline (in progress)
 
-
+   Currently, only Crawl Repository Metadata.
 
 ##### 3. Construct Recommendation System (to do)
 
