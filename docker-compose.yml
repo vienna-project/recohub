@@ -5,10 +5,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: always
     links:
       - mongo
       - redis
+    volumes:
+      - ./volume/crawler-logs:/server/logs/
+    environment:
+      - NUM_CONCURRENT=50
+      - LOGGING_LEVEL=30
 
   mongo:
     # https://hub.docker.com/_/mongo
@@ -17,6 +21,8 @@ services:
     restart: always
     ports:
       - 27017:27017
+    volumes:
+      - ./volume/mongo:/data/db
 
   redis:
     # https://hub.docker.com/_/redis

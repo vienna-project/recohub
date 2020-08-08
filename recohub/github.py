@@ -18,7 +18,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 GITHUB_KEY_PATH = os.path.join(ROOT_DIR, "credentials/github.txt")
 
 
-class GithubKeyGen():
+class GithubKeyGen(object):
     """
     복수개의 Github API Key를 관리하는 Singleton 객체를 생성하는 클래스
     GITHUB_KEY_PATH 에는 line 별로 github API Key가 저장되어 있다.
@@ -67,7 +67,9 @@ class GithubKeyGen():
                 key, (remain, resetAt) = self.key_cache.popitem(last=False)
                 self.key_cache[key] = (remain - 1, resetAt)
                 min_resetAt = min(min_resetAt, resetAt) if min_resetAt else resetAt
-                if remain > 0:
+
+                if remain > 10:
+                    # buffer value : 10
                     return key
 
             if min_resetAt:
@@ -78,7 +80,7 @@ class GithubKeyGen():
                             + timedelta(seconds=10)).total_seconds()
                 if duration > 0:
                     # Edge Case로 datetime.now() 너무 늦게 발생할 경우 갱신될 수 있음
-                    asyncio.sleep(duration)
+                    await asyncio.sleep(duration)
 
                 for key in self.key_cache:
                     remain, resetAt = self.get_resource_limit(key)
