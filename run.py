@@ -4,12 +4,18 @@ Author : SangJae Kang
 Mail : craftsangjae@gmail.com
 """
 import os
-from recohub.broker import RedisQueue
-from recohub.crawler import RepositoryCrawler
-from recohub.database import MongoDatabase
+from crawler.broker import RedisQueue
+from crawler.crawler import RepositoryCrawler
+from crawler.database import MongoDatabase
 
 
 def set_logging():
+    """ Set-up Logging
+    - FileHandler
+    - StreamHandler
+
+    :return:
+    """
     import logging
     logger = logging.getLogger()
     # DEBUG : 10, INFO : 20, WARNING : 30, ERROR : 40, CRITICAL : 50

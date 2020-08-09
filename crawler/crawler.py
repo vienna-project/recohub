@@ -7,10 +7,10 @@ import asyncio
 import aiohttp
 from threading import Thread
 from dateutil.parser import parse as parse_date
-from recohub.broker import BaseBroker
-from recohub.query import GETREPO_QUERY
-from recohub.github import GithubKey, GITHUB_GQL
-from recohub.database import BaseDatabase
+from crawler.broker import BaseBroker
+from crawler.query import GETREPO_QUERY
+from crawler.github import GithubKey, GITHUB_GQL
+from crawler.database import BaseDatabase
 import logging
 
 logger = logging.getLogger()
@@ -28,8 +28,8 @@ class RepositoryCrawler(Thread):
 
     Usages
 
-    >>> from recohub.broker import RedisQueue
-    >>> from recohub.database import MongoDatabase
+    >>> from crawler.broker import RedisQueue
+    >>> from crawler.database import MongoDatabase
     >>> repo_broker = RedisQueue('repository', host='redis')
     >>> repo_database = MongoDatabase('repository', uri=f"mongodb://mongo:27017/")
     >>> crawler_server = RepositoryCrawler(repo_broker, repo_database)
@@ -67,7 +67,7 @@ class RepositoryCrawler(Thread):
                 await asyncio.sleep(self.sleep)
                 continue
             if len(concurrent_tasks) >= self.num_concurrent:
-                # Wait for some tasks to finish befoore adding a new one
+                # Wait for some tasks to finish before adding a new one
                 # ref : https://stackoverflow.com/questions/48483348/how-to-limit-concurrency-with-python-asyncio
                 _done, concurrent_tasks = await asyncio.wait(
                     concurrent_tasks, return_when=asyncio.FIRST_COMPLETED)
@@ -83,7 +83,7 @@ class RepositoryCrawler(Thread):
 
         # 할당량이 남은 깃헙 키 가져오기
         try:
-            api_key = await asyncio.wait_for(GithubKey.get_async(), timeout=5)
+            api_key = await asyncio.wait_for(GithubKey.get_async(), timeout=3600)
             auth = {"Authorization": "bearer " + api_key}
         except asyncio.TimeoutError:
             logger.warning(f"GithubKey.get_async() time outs...")
@@ -121,7 +121,7 @@ class RepositoryCrawler(Thread):
                         try:
                             await asyncio.wait_for(self.database.put(repo_result), timeout=10)
                         except asyncio.TimeoutError:
-                            logger.warning(f"self.database.put(repo_result) timouts...")
+                            logger.warning(f"self.database.put(repo_result) timeouts...")
                             self.broker.put(query['variables'])
 
                     else:
@@ -137,7 +137,7 @@ class RepositoryCrawler(Thread):
                         try:
                             await asyncio.wait_for(GithubKey.set_async(api_key, remain, resetAt), timeout=10)
                         except asyncio.TimeoutError:
-                            logger.warning(f"self.database.put(repo_result) timouts...")
+                            logger.warning(f"self.database.put(repo_result) timeouts...")
 
         except Exception as err:
             logging.error(err)

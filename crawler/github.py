@@ -8,7 +8,7 @@ import requests
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from dateutil.parser import parse as parse_date
-from recohub.query import GETLIMIT_QUERY
+from crawler.query import GETLIMIT_QUERY
 import os
 
 GITHUB_URL = "https://api.github.com"
@@ -60,7 +60,13 @@ class GithubKeyGen(object):
             key_infos.append(f"{key} - ({remain},{resetAt})")
         return "\n".join(key_infos)
 
+    def __len__(self):
+        return sum(remain for remain, _ in self.key_cache.values())
+
     async def get_async(self):
+        """ API 할당량이 남은 키 가져오기
+        :return: key
+        """
         while True:
             min_resetAt = None
             for _ in range(len(self.key_cache)):
@@ -68,8 +74,7 @@ class GithubKeyGen(object):
                 self.key_cache[key] = (remain - 1, resetAt)
                 min_resetAt = min(min_resetAt, resetAt) if min_resetAt else resetAt
 
-                if remain > 10:
-                    # buffer value : 10
+                if remain > 0:
                     return key
 
             if min_resetAt:
@@ -79,26 +84,33 @@ class GithubKeyGen(object):
                             - datetime.utcnow().replace(tzinfo=None)
                             + timedelta(seconds=10)).total_seconds()
                 if duration > 0:
-                    # Edge Case로 datetime.now() 너무 늦게 발생할 경우 갱신될 수 있음
                     await asyncio.sleep(duration)
 
-                for key in self.key_cache:
-                    remain, resetAt = self.get_resource_limit(key)
-                    self.key_cache[key] = (remain, resetAt)
+                # resource 갱신
+                self.update_resource_limit()
+
             else:
                 # key_cache가 없는 상황 (예외 상황)
                 break
 
-    async def set_async(self, key, remain, resetAt):
+    async def set_async(self, key: str, remain: int, resetAt: datetime):
+        """ 키의 할당량, 시간을 저장
+        """
         curr_remain, curr_resetAt = self.key_cache[key]
         # 비동기적으로 갱신하기 때문에 Skew가 발생할 수 있기 때문에
         # 비교를 통해 최소/ 최대값으로 넣어주어야 함
         self.key_cache[key] = (min(remain, curr_remain),
                                max(resetAt, curr_resetAt))
 
-    def get_resource_limit(self, key: str):
+    def update_resource_limit(self):
+        """ github Key의 reource limit을 조회 후 갱신하는 함수
         """
-        해당 Key의 resource limit을 가져오는 함수
+        for key in self.key_cache:
+            remain, resetAt = self.get_resource_limit(key)
+            self.key_cache[key] = (remain, resetAt)
+
+    def get_resource_limit(self, key: str):
+        """ 해당 Key의 resource limit을 가져오는 함수
 
         :param key: githubAPI Key
         :return:
