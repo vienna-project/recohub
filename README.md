@@ -43,8 +43,8 @@ ports :
 
    Currently, only Crawl Repository Metadata.
 
-##### 3. Construct Recommendation System (to do)
+##### 3. Construct Recommendation System (in progress)
 
-
+   see `dev-recommendation` branch. 
 
 ##### 4. Construct Recohub Service (to do)
